@@ -2,24 +2,45 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
+use App\Models\User;
+use App\Models\Wallet;
 
 class DatabaseSeeder extends Seeder
 {
-    use WithoutModelEvents;
-
     /**
      * Seed the application's database.
      */
     public function run(): void
     {
-        // User::factory(10)->create();
-
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
+        // 1. Buat Akun Admin
+        $admin = User::create([
+            'name' => 'Administrator',
+            'email' => 'admin@uiscan.id',
+            'password' => Hash::make('admin111'),
+            'role' => 'admin',
         ]);
+
+
+        Wallet::create([
+            'user_id' => $admin->id,
+            'balance' => 0,
+        ]);
+
+
+        $user = User::create([
+            'name' => 'User UIScan',
+            'email' => 'useruiscan@gmail.com',
+            'password' => Hash::make('user123'),
+            'role' => 'user', 
+        ]);
+
+
+        Wallet::create([
+            'user_id' => $user->id,
+            'balance' => 100000, 
+        ]);
+        
     }
 }

@@ -22,7 +22,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
-        'balance',
+        'role', // 'balance' dihapus karena sudah diurus oleh tabel wallets
     ];
 
     /**
@@ -46,5 +46,19 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    // 1. Relasi ke tabel wallets
+    public function wallet()
+    {
+        return $this->hasOne(Wallet::class);
+    }
+
+    // 2. Otomatis membuat wallet saat ada user baru mendaftar
+    protected static function booted()
+    {
+        static::created(function ($user) {
+            $user->wallet()->create(['balance' => 0]);
+        });
     }
 }

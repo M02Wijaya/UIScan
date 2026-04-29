@@ -1,118 +1,109 @@
 <!doctype html>
-<html lang="id">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>UIScan.id - Cek Plagiasi & AI</title>
+    <title>{{ config('app.name', 'DocuCheck') }}</title>
 
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-
+    
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
-        body { 
-            background-color: #f4f6f9; 
+        body {
             font-family: 'Poppins', sans-serif;
+            background-color: #f4f7fa;
+            color: #333;
         }
         .navbar {
-            background-color: #ffffff;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
-            padding: 15px 0;
+            backdrop-filter: blur(10px);
+            background-color: rgba(255, 255, 255, 0.9) !important;
         }
-        .brand-text {
-            color: #fd7e14; /* Warna orange mirip referensi */
-            font-weight: 700;
-            font-size: 24px;
+        .card {
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.04), 0 1px 3px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
         }
-        .announcement-bar {
-            background-color: #6f42c1; /* Warna ungu referensi */
-            color: white;
-            padding: 8px 0;
-            font-size: 13px;
-            font-weight: 600;
-            text-align: center;
+        .btn-custom {
+            border-radius: 8px;
+            font-weight: 500;
+            padding: 8px 20px;
+            transition: transform 0.2s;
         }
-        /* Style untuk Sidebar Link (Persiapan untuk Step 3) */
-        .sidebar-menu {
-            background: #fff;
-            border-radius: 10px;
-            padding: 15px;
-            margin-bottom: 15px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.03);
-            text-decoration: none;
-            color: #333;
-            display: block;
-            transition: all 0.3s;
-        }
-        .sidebar-menu:hover, .sidebar-menu.active {
-            border-left: 4px solid #6f42c1;
-            background: #f8f9fa;
-        }
-        .sidebar-icon {
-            width: 30px;
-            color: #555;
+        .btn-custom:hover {
+            transform: translateY(-2px);
         }
     </style>
 </head>
 <body>
     <div id="app">
-        <nav class="navbar navbar-expand-md navbar-light bg-white">
+        <nav class="navbar navbar-expand-md navbar-light shadow-sm sticky-top">
             <div class="container">
-                <a class="navbar-brand d-flex align-items-center" href="{{ url('/') }}">
-                    <i class="fas fa-shield-alt fs-3 me-2" style="color: #fd7e14;"></i>
-                    <span class="brand-text">UIScan.id</span>
+                <a class="navbar-brand fw-bold text-primary" href="{{ url('/') }}">
+                    <i class="fas fa-shield-check me-2"></i>DocuCheck
                 </a>
-                
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="{{ __('Toggle navigation') }}">
+                <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent">
                     <span class="navbar-toggler-icon"></span>
                 </button>
 
                 <div class="collapse navbar-collapse" id="navbarSupportedContent">
-                    <ul class="navbar-nav mx-auto mb-2 mb-lg-0 fw-medium">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark mx-2" href="#">Cek Pesanan</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark mx-2" href="#">Cara Order</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark mx-2" href="#">Jasa Kami <i class="fas fa-caret-down"></i></a>
-                        </li>
+                    <ul class="navbar-nav me-auto">
+                        @auth
+                            @if(auth()->user()->role == 'admin')
+                                <li class="nav-item"><a class="nav-link fw-semibold" href="{{ route('admin.dashboard') }}">Dashboard Admin</a></li>
+                                <li class="nav-item"><a class="nav-link" href="{{ route('admin.users') }}">Pengguna</a></li>
+                                <li class="nav-item"><a class="nav-link" href="{{ route('admin.documents') }}">Riwayat Scan</a></li>
+                            @else
+                                <li class="nav-item"><a class="nav-link fw-semibold" href="{{ route('home') }}">Dashboard</a></li>
+                                <li class="nav-item"><a class="nav-link" href="{{ route('documents.index') }}">Dokumen Saya</a></li>
+                                <li class="nav-item"><a class="nav-link" href="{{ route('user.topup') }}">Isi Saldo</a></li>
+                                <li class="nav-item"><a class="nav-link" href="{{ route('user.history') }}">Riwayat</a></li>
+                            @endif
+                        @endauth
                     </ul>
 
-                    <ul class="navbar-nav ms-auto">
+                    <ul class="navbar-nav ms-auto align-items-center">
                         @guest
                             @if (Route::has('login'))
                                 <li class="nav-item">
                                     <a class="nav-link" href="{{ route('login') }}">{{ __('Login') }}</a>
                                 </li>
                             @endif
-
                             @if (Route::has('register'))
                                 <li class="nav-item">
-                                    <a class="btn btn-warning text-white fw-bold px-4 ms-2" style="background-color: #fd7e14; border:none;" href="{{ route('register') }}">{{ __('Register') }}</a>
+                                    <a class="btn btn-primary btn-custom ms-2" href="{{ route('register') }}">{{ __('Register') }}</a>
                                 </li>
                             @endif
                         @else
+                            @if(auth()->user()->role != 'admin')
+                            <li class="nav-item me-2">
+                                <span class="badge bg-success rounded-pill px-3 py-2 shadow-sm">
+                                    <i class="fas fa-wallet me-1"></i> Rp {{ number_format(auth()->user()->wallet->balance ?? 0, 0, ',', '.') }}
+                                </span>
+                            </li>
+                            @endif
+                            
                             <li class="nav-item dropdown">
-                                <a id="navbarDropdown" class="nav-link dropdown-toggle fw-bold d-flex align-items-center" href="#" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" v-pre>
-                                    <i class="fas fa-user-circle fs-4 me-2" style="color: #6f42c1;"></i>
+                                <a id="navbarDropdown" class="nav-link dropdown-toggle fw-semibold" href="#" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" v-pre>
+                                    <img src="https://ui-avatars.com/api/?name={{ urlencode(Auth::user()->name) }}&background=0D8ABC&color=fff" alt="Avatar" class="rounded-circle me-1" width="30">
                                     {{ Auth::user()->name }}
                                 </a>
 
-                                <div class="dropdown-menu dropdown-menu-end shadow border-0" aria-labelledby="navbarDropdown">
-                                    <a class="dropdown-item py-2" href="{{ route('home') }}">
-                                        <i class="fas fa-tachometer-alt me-2 text-muted"></i> Dashboard
+                                <div class="dropdown-menu dropdown-menu-end border-0 shadow" aria-labelledby="navbarDropdown">
+                                    <a class="dropdown-item py-2" href="{{ route('profile.index') }}">
+                                        <i class="fas fa-user-circle me-2 text-muted"></i> Profil Saya
                                     </a>
-                                    <hr class="dropdown-divider">
+                                    <div class="dropdown-divider"></div>
                                     <a class="dropdown-item py-2 text-danger" href="{{ route('logout') }}"
                                        onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
                                         <i class="fas fa-sign-out-alt me-2"></i> {{ __('Logout') }}
                                     </a>
-
                                     <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
                                         @csrf
                                     </form>
@@ -124,15 +115,12 @@
             </div>
         </nav>
 
-        <div class="announcement-bar">
-            <i class="fas fa-fire me-1"></i> <i class="fas fa-bullhorn me-1"></i> INFO PENTING ‼️ KLIK TOMBOL AKTIFKAN NOTIFIKASI WHATSAPP ATAU DOWNLOAD FILE KAMU DI HALAMAN CEK PESANAN SEBELUM 24 JAM!
-        </div>
-
-        <main class="py-5">
+        <main class="py-4">
             @yield('content')
         </main>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    @yield('scripts')
 </body>
-</html>
+</html>x    

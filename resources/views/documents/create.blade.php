@@ -1,95 +1,90 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container">
+<div class="container py-4">
     <div class="row justify-content-center">
-        <div class="col-md-8">
-            
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h3 class="fw-bold">
-                    <i class="fas fa-cloud-upload-alt" style="color: #6f42c1;"></i> Form Upload Dokumen
-                </h3>
-                <a href="{{ route('home') }}" class="btn btn-outline-secondary rounded-pill px-4">Batal</a>
+        <div class="col-lg-8">
+            <div class="text-center mb-4">
+                <h3 class="fw-bold">Pindai Dokumen Baru</h3>
+                <p class="text-muted">Pilih jenis analisis dan unggah dokumen PDF Anda.</p>
             </div>
 
-            <div class="card shadow-sm border-0 rounded-4">
-                <div class="card-body p-4">
-                    
-                    @php
-                        $serviceType = request('type', 'plagiarism');
-                        $serviceName = $serviceType == 'ai' ? 'Cek Deteksi AI' : 'Cek Plagiarisme';
-                        $price = $serviceType == 'ai' ? '10.000' : '15.000'; // Simulasi harga
-                    @endphp
+            @if(session('error'))
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class="fas fa-exclamation-triangle me-2"></i> {{ session('error') }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            @endif
 
-                    <div class="alert alert-info border-0 rounded-3 mb-4 d-flex align-items-center">
-                        <i class="fas fa-info-circle fs-4 me-3"></i>
-                        <div>
-                            <strong>Layanan Pilihan Anda:</strong> {{ $serviceName }}<br>
-                            <small>Pastikan dokumen yang Anda unggah sudah benar.</small>
-                        </div>
-                    </div>
-
+            <div class="card shadow-sm border-0">
+                <div class="card-body p-5">
                     <form action="{{ route('documents.store') }}" method="POST" enctype="multipart/form-data">
                         @csrf
                         
-                        <input type="hidden" name="service_type" value="{{ $serviceType }}">
-                        <input type="hidden" name="price" value="{{ str_replace('.', '', $price) }}">
-
-                        <div class="mb-3">
-                            <label for="title" class="form-label fw-bold">Judul Dokumen</label>
-                            <input type="text" class="form-control bg-light" id="title" name="title" placeholder="Contoh: Bab 1 Skripsi Manajemen" required>
+                        <div class="mb-4">
+                            <label for="title" class="form-label fw-semibold">Judul Dokumen <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control form-control-lg @error('title') is-invalid @enderror" id="title" name="title" value="{{ old('title') }}" placeholder="Contoh: Bab 1 Pendahuluan" required>
+                            @error('title')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
                         </div>
 
-                        <div class="mb-3">
-                            <label for="document_file" class="form-label fw-bold">Upload File (PDF / Word)</label>
-                            <input class="form-control bg-light" type="file" id="document_file" name="document_file" accept=".pdf,.doc,.docx" required>
-                            <div class="form-text text-danger small">* Maksimal ukuran file: 10MB.</div>
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="whatsapp_number" class="form-label fw-bold">Nomor WhatsApp Aktif</label>
-                            <div class="input-group">
-                                <span class="input-group-text bg-light border-end-0"><i class="fab fa-whatsapp text-success"></i></span>
-                                <input type="text" class="form-control bg-light border-start-0" id="whatsapp_number" name="whatsapp_number" placeholder="Contoh: 081234567890" required>
-                            </div>
-                            <div class="form-text small">Kami akan mengirimkan notifikasi dan file hasil via WhatsApp.</div>
-                        </div>
-
-                        @if($serviceType == 'plagiarism')
-                            <div class="mb-4 p-3 border rounded-3 bg-light">
-                                <label class="form-label fw-bold mb-2">Filter Tambahan (Standar Kampus)</label>
-                                <div class="form-check mb-2">
-                                    <input class="form-check-input" type="checkbox" id="exclude_quotes" name="exclude_quotes" value="1" checked>
-                                    <label class="form-check-label" for="exclude_quotes">
-                                        Kecualikan Kutipan (Exclude Quotes)
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold mb-3">Pilih Jenis Layanan (Biaya: Rp 5.000) <span class="text-danger">*</span></label>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <input type="radio" class="btn-check" name="service_type" id="service_ai" value="ai" required {{ old('service_type') == 'ai' ? 'checked' : '' }}>
+                                    <label class="btn btn-outline-info w-100 p-3 text-start rounded-3 h-100" for="service_ai">
+                                        <div class="d-flex align-items-center mb-2">
+                                            <i class="fas fa-robot fs-4 me-2 text-info"></i>
+                                            <span class="fw-bold text-dark fs-5">Deteksi AI</span>
+                                        </div>
+                                        <small class="text-muted d-block">Mendeteksi teks hasil *generate* mesin (ChatGPT, Gemini, dll).</small>
                                     </label>
                                 </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" id="exclude_bibliography" name="exclude_bibliography" value="1" checked>
-                                    <label class="form-check-label" for="exclude_bibliography">
-                                        Kecualikan Daftar Pustaka (Exclude Bibliography)
+                                <div class="col-md-6">
+                                    <input type="radio" class="btn-check" name="service_type" id="service_plagiarism" value="plagiarism" required {{ old('service_type') == 'plagiarism' ? 'checked' : '' }}>
+                                    <label class="btn btn-outline-warning w-100 p-3 text-start rounded-3 h-100" for="service_plagiarism">
+                                        <div class="d-flex align-items-center mb-2">
+                                            <i class="fas fa-copy fs-4 me-2 text-warning"></i>
+                                            <span class="fw-bold text-dark fs-5">Cek Plagiasi</span>
+                                        </div>
+                                        <small class="text-muted d-block">Memeriksa kesamaan teks dengan sumber dari internet (Similarity).</small>
                                     </label>
                                 </div>
                             </div>
-                        @endif
+                            @error('service_type')
+                                <div class="text-danger mt-2 small">{{ $message }}</div>
+                            @enderror
+                        </div>
 
-                        <hr class="my-4">
-                        
-                        <div class="d-flex justify-content-between align-items-center mt-2">
-                            <div>
-                                <span class="text-muted small fw-bold">Total Tagihan:</span><br>
-                                <h3 class="fw-bold text-success mb-0">Rp {{ $price }}</h3>
+                        <div class="mb-5">
+                            <label for="file" class="form-label fw-semibold">Unggah File PDF <span class="text-danger">*</span></label>
+                            <div class="p-4 border border-2 border-dashed rounded-3 text-center bg-light">
+                                <i class="fas fa-file-pdf fa-3x text-danger mb-3"></i>
+                                <input class="form-control @error('file') is-invalid @enderror" type="file" id="file" name="file" accept="application/pdf" required>
+                                <small class="text-muted d-block mt-2">Maksimal ukuran file: 2MB. Hanya format PDF.</small>
                             </div>
-                            <button type="submit" class="btn text-white btn-lg rounded-pill px-4 shadow" style="background-color: #6f42c1;">
-                                Proses Sekarang <i class="fas fa-paper-plane ms-2"></i>
+                            @error('file')
+                                <div class="text-danger mt-2 small">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary btn-lg btn-custom shadow-sm">
+                                <i class="fas fa-paper-plane me-2"></i> Mulai Pemindaian (Potong Rp 5.000)
                             </button>
                         </div>
-
                     </form>
                 </div>
             </div>
-
         </div>
     </div>
 </div>
+
+<style>
+    .border-dashed { border-style: dashed !important; border-color: #dee2e6; }
+    .btn-check:checked + .btn-outline-info { background-color: rgba(13, 202, 240, 0.1); border-color: #0dcaf0; }
+    .btn-check:checked + .btn-outline-warning { background-color: rgba(255, 193, 7, 0.1); border-color: #ffc107; }
+</style>
 @endsection

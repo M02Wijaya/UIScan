@@ -14,6 +14,12 @@ class HomeController extends Controller
 
     public function index()
     {
+        // 1. CEK ROLE: Jika yang login adalah admin, langsung lempar ke Panel Admin!
+        if (auth()->user()->role === 'admin') {
+            return redirect()->route('admin.dashboard');
+        }
+
+        // 2. Jika yang login adalah user biasa, jalankan perhitungan statistik ini
         $userId = auth()->id();
         
         // Menghitung statistik dokumen

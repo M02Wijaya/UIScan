@@ -1,128 +1,118 @@
-@extends('layouts.app')
-
-@section('content')
-<div class="container-fluid px-4">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h3 class="fw-bold"><i class="fas fa-file-contract text-primary"></i> Laporan Analisis Dokumen</h3>
-        <div>
-            <a href="{{ route('documents.pdf', $document->id) }}" class="btn btn-danger me-2 shadow-sm"><i class="fas fa-file-pdf"></i> Download Laporan PDF</a>
-            <a href="{{ route('documents.index') }}" class="btn btn-outline-secondary">Kembali</a>
+@extends('layouts.app') @section('content')
+<div class="container py-4">
+    <div class="row mb-4">
+        <div class="col-12 d-flex justify-content-between align-items-center">
+            <h3 class="mb-0 fw-bold">Laporan Analisis Dokumen</h3>
+            <div>
+                <a href="{{ route('documents.index') }}" class="btn btn-outline-secondary me-2">Kembali</a>
+                <a href="{{ route('documents.download', $document->id) }}" class="btn btn-primary">
+                    <i class="fas fa-download"></i> Download PDF
+                </a>
+            </div>
         </div>
     </div>
 
-    @if(session('success'))
-        <div class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
-            <i class="fas fa-check-circle"></i> {{ session('success') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    @endif
-
     <div class="row">
         <div class="col-md-8">
-            <div class="card shadow-sm border-0 h-100">
-                <div class="card-header bg-white border-bottom-0 pt-4 pb-0">
-                    <h5 class="fw-bold mb-0">{{ $document->title }}</h5>
-                    <p class="text-muted small mb-0">File Asli: {{ $document->file_name }}</p>
+            <div class="card shadow-sm mb-4 border-0">
+                <div class="card-header bg-white border-bottom py-3">
+                    <h5 class="mb-0 fw-bold text-primary">{{ $document->title }}</h5>
                 </div>
-                <hr>
-                <div class="card-body pt-0" style="font-size: 1.05rem; line-height: 2; color:#333;">
-                    @php
-                        // Memberikan warna buatan pada teks untuk simulasi
-                        $text = htmlspecialchars($document->extracted_text);
-                        $highlighted = str_replace(
-                            "membandingkannya dengan miliaran database jurnal, artikel internet, dan publikasi ilmiah.", 
-                            "<mark class='bg-danger text-white px-1 rounded'>membandingkannya dengan miliaran database jurnal, artikel internet, dan publikasi ilmiah. <sup class='fw-bold'>1</sup></mark>", 
-                            $text
-                        );
-                        $highlighted = str_replace(
-                            "Penelitian ini bertujuan untuk mengukur efektivitas sistem tersebut", 
-                            "<mark class='bg-warning px-1 rounded'>Penelitian ini bertujuan untuk mengukur efektivitas sistem tersebut <sup class='fw-bold'>2</sup></mark>", 
-                            $highlighted
-                        );
-                    @endphp
-                    
-                    <p style="white-space: pre-wrap;">{!! $highlighted !!}</p>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-sm-4 text-muted">Nama File</div>
+                        <div class="col-sm-8 fw-semibold">{{ $document->file_name }}</div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-sm-4 text-muted">ID Laporan</div>
+                        <div class="col-sm-8">{{ $document->ref_number }}</div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-sm-4 text-muted">Jumlah Kata</div>
+                        <div class="col-sm-8">{{ number_format($details['word_count'] ?? 0) }} kata</div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-sm-4 text-muted">Tanggal Scan</div>
+                        <div class="col-sm-8">{{ $document->updated_at->format('d M Y, H:i') }} WIB</div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-4 text-muted">Jenis Layanan</div>
+                        <div class="col-sm-8">
+                            @if($document->service_type == 'ai')
+                                <span class="badge bg-info text-dark">Deteksi AI</span>
+                            @else
+                                <span class="badge bg-warning text-dark">Cek Plagiasi</span>
+                            @endif
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-white border-bottom py-3">
+                    <h6 class="mb-0 fw-bold">Pratinjau Teks Dokumen</h6>
+                </div>
+                <div class="card-body" style="max-height: 400px; overflow-y: auto; background-color: #f8f9fa;">
+                    <p style="font-size: 14px; line-height: 1.8; text-align: justify;">
+                        {{ $document->extracted_text }}
+                    </p>
                 </div>
             </div>
         </div>
 
         <div class="col-md-4">
-            
-            <div class="card shadow-sm border-0 mb-3 bg-light">
-                <div class="card-body p-3 small text-muted">
-                    <div class="d-flex justify-content-between border-bottom pb-2 mb-2">
-                        <span>WORD COUNT</span>
-                        <span class="fw-bold text-dark">{{ $details['word_count'] ?? 0 }} Words</span>
-                    </div>
-                    <div class="d-flex justify-content-between border-bottom pb-2 mb-2">
-                        <span>TIME SUBMITTED</span>
-                        <span class="fw-bold text-dark">{{ $document->updated_at->format('d-M-Y H:i A') }}</span>
-                    </div>
-                    <div class="d-flex justify-content-between">
-                        <span>PAPER ID</span>
-                        <span class="fw-bold text-dark">{{ $details['paper_id'] ?? '123456789' }}</span>
-                    </div>
-                </div>
-            </div>
-
-            <div class="card shadow-sm border-0 mb-3">
-                <div class="card-body text-center py-4">
-                    @if($document->service_type == 'plagiarism')
-                        <h6 class="text-muted fw-bold mb-1">ORIGINALITY REPORT (SIMILARITY INDEX)</h6>
-                        <h1 class="display-3 fw-bold" style="color: #dc3545;">{{ $scanResult->similarity_score }}%</h1>
-                        
-                        <div class="d-flex justify-content-center text-muted small mt-3">
-                            <div class="mx-3">
-                                <h5 class="fw-bold text-dark mb-0">{{ $details['internet_sources'] ?? 0 }}%</h5>
-                                Internet Sources
-                            </div>
-                            <div class="mx-3 border-start border-end px-3">
-                                <h5 class="fw-bold text-dark mb-0">{{ $details['publications'] ?? 0 }}%</h5>
-                                Publications
-                            </div>
-                            <div class="mx-3">
-                                <h5 class="fw-bold text-dark mb-0">{{ $details['student_papers'] ?? 0 }}%</h5>
-                                Student Papers
-                            </div>
-                        </div>
+            <div class="card shadow-sm mb-4 border-0 text-center">
+                <div class="card-body py-5">
+                    @if($document->service_type == 'ai')
+                        <h5 class="text-muted mb-3">Probabilitas AI</h5>
+                        @php
+                            $aiColor = $scanResult->ai_probability > 50 ? 'text-danger' : 'text-success';
+                        @endphp
+                        <h1 class="display-1 fw-bold {{ $aiColor }} mb-0">
+                            {{ $scanResult->ai_probability }}%
+                        </h1>
+                        <p class="text-muted mt-2">
+                            {{ $scanResult->ai_probability > 50 ? 'Kemungkinan besar ditulis oleh AI.' : 'Terlihat seperti tulisan manusia.' }}
+                        </p>
                     @else
-                        <h6 class="text-muted fw-bold mb-1">AI DETECTION PROBABILITY</h6>
-                        <h1 class="display-3 fw-bold" style="color: #0dcaf0;">{{ $scanResult->ai_probability }}%</h1>
-                        <p class="text-muted small">Kemungkinan teks ditulis oleh AI (ChatGPT, dll)</p>
+                        <h5 class="text-muted mb-3">Indeks Plagiasi</h5>
+                        @php
+                            $plagColor = $scanResult->similarity_score > 20 ? 'text-danger' : 'text-success';
+                        @endphp
+                        <h1 class="display-1 fw-bold {{ $plagColor }} mb-0">
+                            {{ $scanResult->similarity_score }}%
+                        </h1>
+                        <p class="text-muted mt-2">Ditemukan kesamaan dengan sumber internet.</p>
                     @endif
                 </div>
             </div>
 
             @if($document->service_type == 'plagiarism')
-            <div class="card shadow-sm border-0 mb-3">
-                <div class="card-header bg-white fw-bold">PRIMARY SOURCES</div>
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-white border-bottom py-3">
+                    <h6 class="mb-0 fw-bold">Sumber Kesamaan Teks</h6>
+                </div>
                 <ul class="list-group list-group-flush">
-                    @if(isset($details['sources']))
-                        @foreach($details['sources'] as $index => $source)
-                        <li class="list-group-item d-flex justify-content-between align-items-start py-3">
-                            <div class="ms-2 me-auto small">
-                                <div class="fw-bold">
-                                    <span class="badge {{ $index == 0 ? 'bg-danger' : 'bg-warning text-dark' }} me-1">{{ $index + 1 }}</span>
-                                    {{ $source['name'] }}
+                    @forelse($details['sources'] ?? [] as $source)
+                        <li class="list-group-item d-flex justify-content-between align-items-center py-3">
+                            <div class="ms-2 me-auto">
+                                <div class="fw-bold" style="font-size: 14px;">
+                                    <a href="{{ $source['url'] ?? '#' }}" target="_blank" class="text-decoration-none text-dark">
+                                        {{ $source['name'] ?? 'Sumber Internet' }}
+                                    </a>
                                 </div>
-                                <span class="text-muted">{{ $source['type'] }}</span>
+                                <span class="text-muted" style="font-size: 12px;">{{ $source['type'] ?? 'Internet' }}</span>
                             </div>
-                            <span class="fw-bold fs-5">{{ $source['percentage'] }}%</span>
+                            <span class="badge bg-danger rounded-pill">{{ $source['percentage'] ?? 0 }}%</span>
                         </li>
-                        @endforeach
-                    @endif
+                    @empty
+                        <li class="list-group-item text-center py-4 text-muted">
+                            Tidak ditemukan indikasi plagiasi di internet. Bagus!
+                        </li>
+                    @endforelse
                 </ul>
             </div>
             @endif
-
-            <div class="card shadow-sm border-0 bg-light small">
-                <div class="card-body p-3 fw-bold text-muted text-uppercase">
-                    <div class="mb-1">Exclude Quotes <span class="float-end text-dark">{{ $document->exclude_quotes ? 'ON' : 'OFF' }}</span></div>
-                    <div class="mb-1">Exclude Bibliography <span class="float-end text-dark">{{ $document->exclude_bibliography ? 'ON' : 'OFF' }}</span></div>
-                    <div>Exclude Sources <span class="float-end text-dark">OFF</span></div>
-                </div>
-            </div>
-
         </div>
     </div>
 </div>

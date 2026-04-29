@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DocuCheck - Deteksi AI & Plagiasi Akurat</title>
+    <title>UIScan - Deteksi AI & Plagiasi Akurat</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -29,7 +29,7 @@
     <nav id="navbar" class="navbar navbar-expand-lg navbar-light bg-white shadow-sm fixed-top py-3">
         <div class="container">
             <a class="navbar-brand fw-bold text-primary fs-4" href="{{ url('/') }}">
-                <i class="fas fa-shield-check me-2"></i>DocuCheck
+                <i class="fas fa-shield-check me-2"></i>UIScan
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
@@ -157,7 +157,7 @@
 
     <footer class="bg-dark text-white py-4 text-center">
         <div class="container">
-            <p class="mb-0">&copy; {{ date('Y') }} DocuCheck. All rights reserved.</p>
+            <p class="mb-0">&copy; {{ date('Y') }} UIScan. All rights reserved.</p>
             <small class="text-muted">Sistem Deteksi AI & Plagiasi Berbasis Saldo</small>
         </div>
     </footer>
